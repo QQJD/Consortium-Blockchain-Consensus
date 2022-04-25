@@ -1,11 +1,14 @@
 package utils;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+
 public class LocalUtils {
 
     /**
      * 将String格式的ip转换为long格式
      * @param ipStr XXX.XXX.XXX.XXX格式的ip字符串
-     * @return
+     * @return 以long表示的ip
      */
     public static long ipStr2Long(String ipStr) {
         String[] ip = ipStr.split("\\.");
@@ -19,7 +22,7 @@ public class LocalUtils {
     /**
      * 将long格式的ip转换为String格式
      * @param ip 以long表示的ip
-     * @return
+     * @return XXX.XXX.XXX.XXX格式的ip字符串
      */
     public static String long2IPStr(long ip) {
         StringBuilder sb = new StringBuilder();

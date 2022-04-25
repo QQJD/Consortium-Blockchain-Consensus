@@ -15,6 +15,8 @@ import java.security.PublicKey;
 @NoArgsConstructor @ToString
 public class ChannelInfo {
 
+    @Getter @Setter
+    private byte index;
     /**
      * 用于密钥协商阶段，之后丢弃
      */
@@ -36,8 +38,9 @@ public class ChannelInfo {
     @Getter @Setter
     private PublicKey publicKey;
 
-    public ChannelInfo(DHPrivateKey tempPublicKey, DHPrivateKey tempPrivateKey, SecretKey secretKey,
+    public ChannelInfo(byte index, DHPrivateKey tempPublicKey, DHPrivateKey tempPrivateKey, SecretKey secretKey,
                        PublicKey publicKey) {
+        this.index = index;
         this.tempPublicKey = tempPublicKey;
         this.tempPrivateKey = tempPrivateKey;
         this.secretKey = secretKey;

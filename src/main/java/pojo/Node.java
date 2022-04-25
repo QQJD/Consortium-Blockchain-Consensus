@@ -28,6 +28,8 @@ public class Node {
     @Getter
     private String digestAlgorithm;
     @Getter
+    private String consensusAlgorithm;
+    @Getter
     private KeyPair keyPair;
 
     private static Node node;
@@ -35,7 +37,7 @@ public class Node {
     private Node() {
         Properties prop = new Properties();
         String propUrl = System.getProperty("user.dir") + File.separator + "src" + File.separator + "main" + File.separator + "resources" + File.separator + "node.properties";
-        Reader resource = null;
+        Reader resource;
         try {
             resource = new FileReader(propUrl);
             prop.load(resource);
@@ -48,7 +50,8 @@ public class Node {
         this.asymmetricAlgorithm = prop.getProperty("asymmetricAlgorithm");
         this.symmetricAlgorithm = prop.getProperty("symmetricAlgorithm");
         this.digestAlgorithm = prop.getProperty("digestAlgorithm");
-        keyPair = CryptoUtils.generateKeyPair(asymmetricAlgorithm);
+        this.consensusAlgorithm = prop.getProperty("consensusAlgorithm");
+        this.keyPair = CryptoUtils.generateKeyPair(asymmetricAlgorithm);
     }
 
     public static Node getInstance() {

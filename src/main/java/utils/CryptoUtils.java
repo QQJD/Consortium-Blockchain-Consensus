@@ -60,8 +60,8 @@ public class CryptoUtils {
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
-        KeyPair keyPair = keyPairGenerator.generateKeyPair();
-        return keyPair;
+        assert keyPairGenerator != null;
+        return keyPairGenerator.generateKeyPair();
     }
 
     /**
@@ -78,8 +78,8 @@ public class CryptoUtils {
         } catch (GeneralSecurityException e) {
             e.printStackTrace();
         }
-        KeyPair keyPair = keyPairGenerator.generateKeyPair();
-        return keyPair;
+        assert keyPairGenerator != null;
+        return keyPairGenerator.generateKeyPair();
     }
 
     /**
@@ -102,9 +102,9 @@ public class CryptoUtils {
         } catch (GeneralSecurityException e) {
             e.printStackTrace();
         }
+        assert messageDigest != null;
         byte[] digest = messageDigest.digest(secretArr);
-        SecretKey secret = new SecretKeySpec(digest, symmetricAlgorithm);
-        return secret;
+        return new SecretKeySpec(digest, symmetricAlgorithm);
     }
 
     /**
@@ -182,6 +182,24 @@ public class CryptoUtils {
             e.printStackTrace();
         }
         return false;
+    }
+
+    /**
+     * 摘要
+     * @param digestAlgorithm 摘要算法
+     * @param raw 原始内容
+     * @return 摘要结果
+     */
+    public static byte[] digest(String digestAlgorithm, byte[] raw) {
+        MessageDigest messageDigest = null;
+        try {
+            messageDigest = MessageDigest.getInstance(digestAlgorithm);
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        assert messageDigest != null;
+        messageDigest.update(raw);
+        return messageDigest.digest();
     }
 
 }

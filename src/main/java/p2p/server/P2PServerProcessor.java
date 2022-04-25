@@ -15,6 +15,7 @@ import pojo.ChannelInfo;
 import pojo.Node;
 import pojo.msg.ConnMsg;
 import pojo.msg.RawMsg;
+import pojo.msg.ReqMsg;
 import utils.CryptoUtils;
 import pojo.msg.MsgType;
 
@@ -60,8 +61,12 @@ public class P2PServerProcessor {
     public void route(ChannelHandlerContext ctx, MsgType msgType, String json) {
         switch (msgType) {
             case CONN:
-                ConnMsg connMsg = new Gson().fromJson(json, ConnMsg.class);
+                ConnMsg connMsg = gson.fromJson(json, ConnMsg.class);
                 conn(ctx, connMsg);
+                break;
+            case REQ:
+                ReqMsg reqMsg = gson.fromJson(json, ReqMsg.class);
+                req(ctx, reqMsg);
                 break;
             default:
                 break;
@@ -87,7 +92,7 @@ public class P2PServerProcessor {
 
         // channel的密钥协商完成，存入channelGroup和NetworkInfo
         PublicKey publicKey = CryptoUtils.parseEncodedPublicKey(node.getAsymmetricAlgorithm(), connMsg.getPublicKey());
-        ChannelInfo channelInfo = new ChannelInfo(null, null, secretKey, publicKey);
+        ChannelInfo channelInfo = new ChannelInfo(connMsg.getIndex(), null, null, secretKey, publicKey);
         log.debug(String.format("[SERVER-%s LOCAL][CHANNEL_ADD]: %s", node.getIndex(), channelInfo));
         Channel channel = ctx.channel();
         if (!NetworkInfo.addServerPeer(connMsg.getIndex(), channel.id())) return;
@@ -113,6 +118,13 @@ public class P2PServerProcessor {
 
         log.debug(String.format("channel数量：%s", channelGroup.size()));
 
+    }
+
+    public void req(ChannelHandlerContext ctx, ReqMsg reqMsg) {
+        switch (node.getConsensusAlgorithm()) {
+            case "HoneyBadger":
+                break;
+        }
     }
 
 }

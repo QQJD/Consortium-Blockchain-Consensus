@@ -9,7 +9,11 @@ public enum MsgType {
     /**
      * 密钥协商阶段server收到client的CONN消息后，返回的消息类型
      */
-    CONN_REPLY;
+    CONN_REPLY,
+    /**
+     * 用户发送请求到P2P网络的消息类型
+     */
+    REQ;
 
     private static MsgType[] int2EnumMap = null;
 

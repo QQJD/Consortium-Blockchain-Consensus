@@ -66,7 +66,7 @@ public class P2PClientProcessor {
 
         // 生成临时公私钥与channel信息
         KeyPair keyPair = CryptoUtils.generateKeyPair("DH");
-        ChannelInfo channelInfo = new ChannelInfo(null, (DHPrivateKey) keyPair.getPrivate(), null, null);
+        ChannelInfo channelInfo = new ChannelInfo((byte) -1, null, (DHPrivateKey) keyPair.getPrivate(), null, null);
 
         // 将自己的临时私钥绑定到channel对象
         log.debug(String.format("[CLIENT-%s LOCAL][CHANNEL_INFO]: %s", node.getIndex(), channelInfo));
@@ -117,6 +117,7 @@ public class P2PClientProcessor {
         channelInfo.setTempPrivateKey(null);
 
         // channel绑定的对称密钥用于加密/解密，channel绑定的peer公钥用于签名/验签
+        channelInfo.setIndex(connReplyMsg.getIndex());
         channelInfo.setSecretKey(secretKey);
         PublicKey publicKey = CryptoUtils.parseEncodedPublicKey(node.getAsymmetricAlgorithm(), connReplyMsg.getPublicKey());
         channelInfo.setPublicKey(publicKey);

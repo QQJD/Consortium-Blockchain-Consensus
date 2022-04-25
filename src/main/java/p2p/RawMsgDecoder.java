@@ -25,9 +25,10 @@ public class RawMsgDecoder extends ByteToMessageDecoder {
         if(byteBuf.readableBytes() < byteBuf.getInt(0)) return;
         byteBuf.skipBytes(4);
 
-        // 建立连接时双方密钥未协商完成，无法解密/验签
+        // 对于CONN、CONN_REPLY消息，建立连接时双方密钥未协商完成，无法解密/验签
+        // 对于REQ消息，暂不考虑用户与P2P网络之间的通信解密
         MsgType msgType = MsgType.int2Enum(byteBuf.readInt());
-        if(msgType == MsgType.CONN || msgType == MsgType.CONN_REPLY) {
+        if(msgType == MsgType.CONN || msgType == MsgType.CONN_REPLY || msgType == MsgType.REQ) {
             int jsonLen = byteBuf.readInt();
             byte[] json = new byte[jsonLen];
             byteBuf.readBytes(json);
@@ -49,6 +50,7 @@ public class RawMsgDecoder extends ByteToMessageDecoder {
         CryptoUtils.verify(node.getDigestAlgorithm(), node.getAsymmetricAlgorithm(), json, sig, ctx.channel().attr(channelInfoKey).get().getPublicKey());
 
         // 输出
+        assert json != null;
         RawMsg rawMsg = new RawMsg(msgType, new String(json, CharsetUtil.UTF_8), null);
         list.add(rawMsg);
 

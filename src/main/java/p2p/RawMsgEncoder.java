@@ -21,9 +21,10 @@ public class RawMsgEncoder extends MessageToByteEncoder<RawMsg> {
     @Override
     protected void encode(ChannelHandlerContext ctx, RawMsg rawMsg, ByteBuf byteBuf) {
 
-        // 建立连接时双方密钥未协商完成，无法加密/签名
+        // 对于CONN、CONN_REPLY消息，建立连接时双方密钥未协商完成，无法加密/签名
+        // 对于REQ消息，暂不考虑用户与P2P网络之间的通信加密
         MsgType msgType = rawMsg.getMsgType();
-        if(msgType == MsgType.CONN || msgType == MsgType.CONN_REPLY) {
+        if(msgType == MsgType.CONN || msgType == MsgType.CONN_REPLY || msgType == MsgType.REQ) {
             byte[] json = rawMsg.getJson().getBytes();
             int jsonLen = json.length;
             int fullLen = 12 + jsonLen;
@@ -31,7 +32,6 @@ public class RawMsgEncoder extends MessageToByteEncoder<RawMsg> {
             byteBuf.writeInt(msgType.ordinal());
             byteBuf.writeInt(jsonLen);
             byteBuf.writeBytes(json);
-            System.out.println(byteBuf);
             return;
         }
 
@@ -41,7 +41,9 @@ public class RawMsgEncoder extends MessageToByteEncoder<RawMsg> {
         byte[] sig = CryptoUtils.sign(node.getDigestAlgorithm(), node.getAsymmetricAlgorithm(), rawMsg.getJson().getBytes(CharsetUtil.UTF_8), node.getKeyPair().getPrivate());
 
         // 在消息中附加byte[]字段的长度，以便解码
+        assert enc != null;
         int encLen = enc.length;
+        assert sig != null;
         int sigLen = sig.length;
 
         // 输出，在包头附加总长度，以解决拆包问题
