@@ -13,7 +13,11 @@ public enum MsgType {
     /**
      * 用户发送请求到P2P网络的消息类型
      */
-    REQ;
+    REQ,
+    /**
+     * Honey Badger共识的VAL消息
+     */
+    VAL;
 
     private static MsgType[] int2EnumMap = null;
 

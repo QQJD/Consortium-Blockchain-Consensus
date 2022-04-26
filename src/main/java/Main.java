@@ -1,4 +1,5 @@
 import p2p.P2PInitialization;
+import utils.MerkleTree;
 
 import java.io.File;
 import java.util.Arrays;

@@ -67,9 +67,5 @@
     <orderEntry type="library" name="Maven: org.slf4j:slf4j-reload4j:2.0.0-alpha7" level="project" />
     <orderEntry type="library" name="Maven: org.slf4j:slf4j-api:2.0.0-alpha7" level="project" />
     <orderEntry type="library" name="Maven: ch.qos.reload4j:reload4j:1.2.19" level="project" />
-    <orderEntry type="library" name="Maven: de.uni-potsdam.hpi.jerasure:JErasure:0.2.0" level="project" />
-    <orderEntry type="library" name="Maven: junit:junit:4.4" level="project" />
-    <orderEntry type="library" name="Maven: com.google.guava:guava:13.0.1" level="project" />
-    <orderEntry type="library" name="Maven: com.xiaomi.infra:java-erasure:1.0-SNAPSHOT" level="project" />
   </component>
 </module>

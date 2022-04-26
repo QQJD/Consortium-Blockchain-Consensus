@@ -12,7 +12,7 @@ import java.security.PublicKey;
 /**
  * channel对象绑定的信息，用于密钥协商、通信对称加解密、签名/验签
  */
-@NoArgsConstructor @ToString
+@NoArgsConstructor
 public class ChannelInfo {
 
     @Getter @Setter
@@ -45,6 +45,17 @@ public class ChannelInfo {
         this.tempPrivateKey = tempPrivateKey;
         this.secretKey = secretKey;
         this.publicKey = publicKey;
+    }
+
+    @Override
+    public String toString() {
+        return "ChannelInfo{" +
+                "index=" + index +
+                ", tempPublicKey=" + (tempPublicKey == null ? null : tempPublicKey.getAlgorithm()) +
+                ", tempPrivateKey=" + (tempPrivateKey == null ? null : tempPrivateKey.getAlgorithm()) +
+                ", secretKey=" + (secretKey == null ? null : secretKey.getAlgorithm()) +
+                ", publicKey=" + (publicKey == null ? null : publicKey.getAlgorithm()) +
+                '}';
     }
 
 }

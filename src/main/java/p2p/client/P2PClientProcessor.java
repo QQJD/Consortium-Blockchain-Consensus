@@ -46,7 +46,7 @@ public class P2PClientProcessor {
 
     public static P2PClientProcessor getInstance() {
         if(processor == null) {
-            synchronized (Node.class) {
+            synchronized (P2PClientProcessor.class) {
                 if(processor == null) {
                     processor = new P2PClientProcessor();
                     return processor;
@@ -69,7 +69,7 @@ public class P2PClientProcessor {
         ChannelInfo channelInfo = new ChannelInfo((byte) -1, null, (DHPrivateKey) keyPair.getPrivate(), null, null);
 
         // 将自己的临时私钥绑定到channel对象
-        log.debug(String.format("[CLIENT-%s LOCAL][CHANNEL_INFO]: %s", node.getIndex(), channelInfo));
+        log.debug(String.format("[CLIENT-%s][LOCAL][CHANNEL_INFO]: %s", node.getIndex(), channelInfo));
         ctx.channel().attr(channelInfoKey).set(channelInfo);
 
         // 自己的永久公钥用于签名/验签，临时公钥用于密钥协商
@@ -77,15 +77,21 @@ public class P2PClientProcessor {
         String connMsgJson = gson.toJson(connMsg);
         RawMsg rawMsg = new RawMsg(MsgType.CONN, connMsgJson, null);
         ctx.writeAndFlush(rawMsg);
-        log.info(String.format("[CLIENT-%s SEND][CONN]: %s", node.getIndex(), connMsg));
+        log.info(String.format("[%s->?][SEND][CONN]: %s", node.getIndex(), connMsg));
 
     }
 
-    public void route(ChannelHandlerContext channelHandlerContext, MsgType msgType, String json) {
+    /**
+     * 请求路由
+     * @param ctx channel连接的上下文对象
+     * @param msgType 收到的消息类型
+     * @param json json化的消息内容
+     */
+    public void route(ChannelHandlerContext ctx, MsgType msgType, String json) {
         switch (msgType) {
             case CONN_REPLY:
                 ConnMsg connReplyMsg = gson.fromJson(json, ConnMsg.class);
-                connReply(channelHandlerContext, connReplyMsg);
+                connReply(ctx, connReplyMsg);
                 break;
             default:
                 break;
@@ -100,7 +106,7 @@ public class P2PClientProcessor {
      */
     public void connReply(ChannelHandlerContext ctx, ConnMsg connReplyMsg) {
 
-        log.info(String.format("[CLIENT-%s RECEIVE][CONN_REPLY]: %s", node.getIndex(), connReplyMsg));
+        log.info(String.format("[%s->%s][RECEIVE][CONN_REPLY]: %s", connReplyMsg.getIndex(), node.getIndex(), connReplyMsg));
 
         // channel的密钥协商完成，存入channelGroup和NetworkInfo
         Channel channel = ctx.channel();
@@ -122,7 +128,7 @@ public class P2PClientProcessor {
         PublicKey publicKey = CryptoUtils.parseEncodedPublicKey(node.getAsymmetricAlgorithm(), connReplyMsg.getPublicKey());
         channelInfo.setPublicKey(publicKey);
 
-        log.debug(String.format("[CLIENT-%s LOCAL][CHANNEL_ADD]: %s", node.getIndex(), channelInfo));
+        log.debug(String.format("[CLIENT-%s][LOCAL][CHANNEL_ADD]: %s", node.getIndex(), channelInfo));
         log.debug(String.format("channel数量：%s", channelGroup.size()));
 
     }

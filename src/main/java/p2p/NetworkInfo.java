@@ -68,12 +68,18 @@ public class NetworkInfo {
         return serverPeers.containsKey(index);
     }
 
+    /**
+     * @return peer总数
+     */
     public static byte getN() {
         return (byte) clientPeers.size();
     }
 
+    /**
+     * @return 容错上限
+     */
     public static byte getF() {
-        return (byte) (clientPeers.size() - clientPeers.size() / 3);
+        return (byte) (clientPeers.size() / 3);
     }
 
 }

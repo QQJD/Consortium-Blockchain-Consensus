@@ -16,7 +16,7 @@ public class ErasureCodeUtils {
         int n = NetworkInfo.getN();
         int f = NetworkInfo.getF();
         int k = n - 2 * f;
-        int blockLen = raw.length / k + 1;
+        int blockLen = (int) Math.ceil(raw.length / k);
         byte[][] enc = new byte[n][blockLen];
         for (int i = 0; i < n; i++) {
             int start = i % k * blockLen;

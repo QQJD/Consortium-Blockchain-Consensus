@@ -11,6 +11,7 @@ public class P2PInitialization {
         try {
             P2PServer.run();
             P2PClient.run();
+            // 阻塞程序，防止直接退出
             new Scanner(System.in).next();
         } catch (Exception e) {
             e.printStackTrace();

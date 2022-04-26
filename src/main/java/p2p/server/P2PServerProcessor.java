@@ -1,6 +1,7 @@
 package p2p.server;
 
 import com.google.gson.Gson;
+import honeybadger.msg.ValMsg;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.group.ChannelGroup;
@@ -47,7 +48,7 @@ public class P2PServerProcessor {
 
     public static P2PServerProcessor getInstance() {
         if(processor == null) {
-            synchronized (Node.class) {
+            synchronized (P2PServerProcessor.class) {
                 if(processor == null) {
                     processor = new P2PServerProcessor();
                     return processor;
@@ -58,6 +59,12 @@ public class P2PServerProcessor {
         return processor;
     }
 
+    /**
+     * 请求路由
+     * @param ctx channel连接的上下文对象
+     * @param msgType 收到的消息类型
+     * @param json json化的消息内容
+     */
     public void route(ChannelHandlerContext ctx, MsgType msgType, String json) {
         switch (msgType) {
             case CONN:
@@ -67,6 +74,10 @@ public class P2PServerProcessor {
             case REQ:
                 ReqMsg reqMsg = gson.fromJson(json, ReqMsg.class);
                 req(ctx, reqMsg);
+                break;
+            case VAL:
+                ValMsg valMsg = gson.fromJson(json, ValMsg.class);
+                val(ctx, valMsg);
                 break;
             default:
                 break;
@@ -82,7 +93,7 @@ public class P2PServerProcessor {
      */
     public void conn(ChannelHandlerContext ctx, ConnMsg connMsg) {
 
-        log.info(String.format("[SERVER-%s RECEIVE][CONN]: %s", node.getIndex(), connMsg));
+        log.info(String.format("[%s->%s][RECEIVE][CONN]: %s", connMsg.getIndex(),node.getIndex(), connMsg));
 
         // 根据peer的临时公钥和自己的临时私钥，生成对称密钥
         DHPublicKey tempPublicKey = (DHPublicKey) CryptoUtils.parseEncodedPublicKey("DH", connMsg.getTempPublicKey());
@@ -93,7 +104,7 @@ public class P2PServerProcessor {
         // channel的密钥协商完成，存入channelGroup和NetworkInfo
         PublicKey publicKey = CryptoUtils.parseEncodedPublicKey(node.getAsymmetricAlgorithm(), connMsg.getPublicKey());
         ChannelInfo channelInfo = new ChannelInfo(connMsg.getIndex(), null, null, secretKey, publicKey);
-        log.debug(String.format("[SERVER-%s LOCAL][CHANNEL_ADD]: %s", node.getIndex(), channelInfo));
+        log.debug(String.format("[SERVER-%s][LOCAL][CHANNEL_ADD]: %s", node.getIndex(), channelInfo));
         Channel channel = ctx.channel();
         if (!NetworkInfo.addServerPeer(connMsg.getIndex(), channel.id())) return;
         channelGroup.add(channel);
@@ -104,7 +115,7 @@ public class P2PServerProcessor {
         String connReplyMsgJson = gson.toJson(connReplyMsg);
         RawMsg rawMsg = new RawMsg(MsgType.CONN_REPLY, connReplyMsgJson, null);
         ctx.writeAndFlush(rawMsg);
-        log.info(String.format("[SERVER-%s SEND][CONN_REPLY]: %s", node.getIndex(), connReplyMsg));
+        log.info(String.format("[%s->%s][SEND][CONN_REPLY]: %s", node.getIndex(), connMsg.getIndex(), connReplyMsg));
 
         // 反向作为client连接peer，以生成反向channel的对称加密密钥
         // 因为不能只生成A作为client，B作为server的channel，有可能共识中存在B作为client向A发送消息的情况
@@ -120,9 +131,34 @@ public class P2PServerProcessor {
 
     }
 
+    /**
+     * REQ请求路由（不同共识算法对REQ请求的处理可能不同）
+     * @param ctx channel连接的上下文对象
+     * @param reqMsg 收到的REQ消息，包含请求序号、具体内容
+     */
     public void req(ChannelHandlerContext ctx, ReqMsg reqMsg) {
+        log.info(String.format("[user->%s][RECEIVE][REQ]: %s", node.getIndex(), reqMsg));
         switch (node.getConsensusAlgorithm()) {
             case "HoneyBadger":
+                honeybadger.protocol.MsgProcessor.req(reqMsg);
+                break;
+            default:
+                break;
+        }
+    }
+
+    /**
+     * VAL请求路由
+     * @param ctx channel连接的上下文对象
+     * @param valMsg 收到的VAL消息，包含proposal、merkle root、merkle proof
+     */
+    public void val(ChannelHandlerContext ctx, ValMsg valMsg) {
+        log.info(String.format("[%s->%s][RECEIVE][VAL]: %s", ctx.channel().attr(channelInfoKey).get().getIndex(), node.getIndex(), valMsg));
+        switch (node.getConsensusAlgorithm()) {
+            case "HoneyBadger":
+                honeybadger.protocol.MsgProcessor.val(valMsg);
+                break;
+            default:
                 break;
         }
     }
