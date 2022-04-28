@@ -79,7 +79,7 @@ public class NetworkInfo {
      * @return 容错上限
      */
     public static byte getF() {
-        return (byte) (clientPeers.size() / 3);
+        return (byte) ((clientPeers.size() - 1) / 3);
     }
 
 }

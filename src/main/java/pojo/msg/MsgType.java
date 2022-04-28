@@ -17,7 +17,23 @@ public enum MsgType {
     /**
      * Honey Badger共识的VAL消息
      */
-    VAL;
+    VAL,
+    /**
+     * Honey Badger共识的ECHO消息
+     */
+    ECHO,
+    /**
+     * Honey Badger共识的READY消息
+     */
+    READY,
+    /**
+     * Honey Badger共识的BVAL消息
+     */
+    BVAL,
+    /**
+     * Honey Badger共识的AUX消息
+     */
+    AUX;
 
     private static MsgType[] int2EnumMap = null;
 

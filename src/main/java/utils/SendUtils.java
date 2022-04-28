@@ -1,8 +1,13 @@
 package utils;
 
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.group.ChannelGroup;
 import p2p.client.P2PClientProcessor;
 import pojo.msg.RawMsg;
+
+import java.util.Iterator;
 
 public class SendUtils {
 
@@ -13,7 +18,15 @@ public class SendUtils {
      * @param rawMsg 需要广播的消息
      */
     public static void publishToServer(RawMsg rawMsg) {
-        channelGroup.writeAndFlush(rawMsg);
+        Iterator<Channel> iterator = channelGroup.iterator();
+        while (iterator.hasNext()) {
+            Channel ch = iterator.next();
+            ch.writeAndFlush(rawMsg).addListener((ChannelFutureListener) future -> {
+                if (!future.isSuccess()) {
+                    System.out.println(future.cause().getMessage());
+                }
+            });
+        }
     }
 
 }

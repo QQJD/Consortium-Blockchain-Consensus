@@ -4,11 +4,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
-/**
- * Honey Badger共识的VAL消息
- */
 @NoArgsConstructor @ToString
-public class ValMsg {
+public class ReadyMsg {
 
     /**
      * 请求序号（共识轮次）
@@ -16,26 +13,14 @@ public class ValMsg {
     @Getter
     private int seq;
     /**
-     * proposal
-     */
-    @Getter
-    private String data;
-    /**
      * merkle root
      */
     @Getter
     private String root;
-    /**
-     * merkle proof
-     */
-    @Getter
-    private String[] proof;
 
-    public ValMsg(int seq, String data, String root, String[] proof) {
+    public ReadyMsg(int seq, String root) {
         this.seq = seq;
-        this.data = data;
         this.root = root;
-        this.proof = proof;
     }
 
 }

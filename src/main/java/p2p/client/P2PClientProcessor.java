@@ -18,6 +18,7 @@ import pojo.msg.ConnMsg;
 import pojo.msg.RawMsg;
 import utils.CryptoUtils;
 import pojo.msg.MsgType;
+import utils.LocalUtils;
 
 import javax.crypto.SecretKey;
 import javax.crypto.interfaces.DHPrivateKey;
@@ -66,14 +67,21 @@ public class P2PClientProcessor {
 
         // 生成临时公私钥与channel信息
         KeyPair keyPair = CryptoUtils.generateKeyPair("DH");
-        ChannelInfo channelInfo = new ChannelInfo((byte) -1, null, (DHPrivateKey) keyPair.getPrivate(), null, null);
+        ChannelInfo channelInfo = new ChannelInfo((byte) -1,
+                null,
+                (DHPrivateKey) keyPair.getPrivate(),
+                null,
+                null);
 
         // 将自己的临时私钥绑定到channel对象
         log.debug(String.format("[CLIENT-%s][LOCAL][CHANNEL_INFO]: %s", node.getIndex(), channelInfo));
         ctx.channel().attr(channelInfoKey).set(channelInfo);
 
         // 自己的永久公钥用于签名/验签，临时公钥用于密钥协商
-        ConnMsg connMsg = new ConnMsg(node.getIndex(), keyPair.getPublic().getEncoded(), node.getKeyPair().getPublic().getEncoded());
+        // byte[]转换为String传输，降低json化后消息大小
+        String myTempPublicKey = LocalUtils.bytes2Hex(keyPair.getPublic().getEncoded());
+        String myPublicKey = LocalUtils.bytes2Hex(node.getKeyPair().getPublic().getEncoded());
+        ConnMsg connMsg = new ConnMsg(node.getIndex(), myTempPublicKey, myPublicKey);
         String connMsgJson = gson.toJson(connMsg);
         RawMsg rawMsg = new RawMsg(MsgType.CONN, connMsgJson, null);
         ctx.writeAndFlush(rawMsg);
@@ -115,9 +123,12 @@ public class P2PClientProcessor {
         channelGroup.add(channel);
 
         // 根据peer的临时公钥和自己的临时私钥，生成对称密钥
-        DHPublicKey tempPublicKey = (DHPublicKey) CryptoUtils.parseEncodedPublicKey("DH", connReplyMsg.getTempPublicKey());
+        byte[] byteTempPublicKey = LocalUtils.hex2Bytes(connReplyMsg.getTempPublicKey());
+        DHPublicKey tempPublicKey = (DHPublicKey) CryptoUtils.parseEncodedPublicKey("DH", byteTempPublicKey);
         DHPrivateKey tempPrivateKey = channelInfo.getTempPrivateKey();
-        SecretKey secretKey = CryptoUtils.generateSecretKey(node.getDigestAlgorithm(), node.getSymmetricAlgorithm(), tempPublicKey, tempPrivateKey);
+        SecretKey secretKey = CryptoUtils.generateSecretKey(node.getDigestAlgorithm(),
+                node.getSymmetricAlgorithm(),
+                tempPublicKey, tempPrivateKey);
 
         // 临时私钥已经不需要
         channelInfo.setTempPrivateKey(null);
@@ -125,7 +136,8 @@ public class P2PClientProcessor {
         // channel绑定的对称密钥用于加密/解密，channel绑定的peer公钥用于签名/验签
         channelInfo.setIndex(connReplyMsg.getIndex());
         channelInfo.setSecretKey(secretKey);
-        PublicKey publicKey = CryptoUtils.parseEncodedPublicKey(node.getAsymmetricAlgorithm(), connReplyMsg.getPublicKey());
+        byte[] bytePublicKey = LocalUtils.hex2Bytes(connReplyMsg.getPublicKey());
+        PublicKey publicKey = CryptoUtils.parseEncodedPublicKey(node.getAsymmetricAlgorithm(), bytePublicKey);
         channelInfo.setPublicKey(publicKey);
 
         log.debug(String.format("[CLIENT-%s][LOCAL][CHANNEL_ADD]: %s", node.getIndex(), channelInfo));

@@ -31,6 +31,8 @@ public class Node {
     private String consensusAlgorithm;
     @Getter
     private KeyPair keyPair;
+    @Getter
+    private byte waterMark;
 
     private static Node node;
 
@@ -52,6 +54,7 @@ public class Node {
         this.digestAlgorithm = prop.getProperty("digestAlgorithm");
         this.consensusAlgorithm = prop.getProperty("consensusAlgorithm");
         this.keyPair = CryptoUtils.generateKeyPair(asymmetricAlgorithm);
+        this.waterMark = Byte.parseByte(prop.getProperty("waterMark"));
     }
 
     public static Node getInstance() {

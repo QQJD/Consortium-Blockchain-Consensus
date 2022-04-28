@@ -19,7 +19,7 @@ public class RawMsgEncoder extends MessageToByteEncoder<RawMsg> {
     public Node node = Node.getInstance();
 
     @Override
-    protected void encode(ChannelHandlerContext ctx, RawMsg rawMsg, ByteBuf byteBuf) {
+    synchronized protected void encode(ChannelHandlerContext ctx, RawMsg rawMsg, ByteBuf byteBuf) {
 
         // 对于CONN、CONN_REPLY消息，建立连接时双方密钥未协商完成，无法加密/签名
         // 对于REQ消息，暂不考虑用户与P2P网络之间的通信加密

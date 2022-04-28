@@ -29,7 +29,7 @@ public class P2PClient {
         // 读取peers的套接字
         Properties prop = new Properties();
         String propUrl = System.getProperty("user.dir") + File.separator + "src" + File.separator + "main" + File.separator + "resources" + File.separator + "peer.properties";
-        Reader resource = null;
+        Reader resource;
         try {
             resource = new FileReader(propUrl);
             prop.load(resource);
@@ -47,10 +47,9 @@ public class P2PClient {
         // 配置客户端，RawMsgEncoder+RawMsgDecoder完成消息加解密、签名/验签功能，并解决拆包问题
         bootstrap.group(eventExecutors)
                 .channel(NioSocketChannel.class)
-                .option(ChannelOption.RCVBUF_ALLOCATOR, new FixedRecvByteBufAllocator(1024 * 64))
                 .handler(new ChannelInitializer<SocketChannel>() {
                     @Override
-                    protected void initChannel(SocketChannel socketChannel) throws Exception {
+                    protected void initChannel(SocketChannel socketChannel) {
                         ChannelPipeline pipeline = socketChannel.pipeline();
                         pipeline.addLast(new RawMsgEncoder());
                         pipeline.addLast(new RawMsgDecoder());

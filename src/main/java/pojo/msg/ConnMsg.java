@@ -9,7 +9,7 @@ import java.util.Arrays;
 /**
  * 密钥协商阶段节点间需要交互的信息
  */
-@NoArgsConstructor
+@NoArgsConstructor @ToString
 public class ConnMsg {
 
     /**
@@ -21,26 +21,17 @@ public class ConnMsg {
      * peer为密钥协商临时生成的公钥
      */
     @Getter
-    private byte[] tempPublicKey;
+    private String tempPublicKey;
     /**
      * peer用于后续签名/验签的永久公钥
      */
     @Getter
-    private byte[] publicKey;
+    private String publicKey;
 
-    public ConnMsg(byte index, byte[] tempPublicKey, byte[] publicKey) {
+    public ConnMsg(byte index, String tempPublicKey, String publicKey) {
         this.index = index;
         this.tempPublicKey = tempPublicKey;
         this.publicKey = publicKey;
-    }
-
-    @Override
-    public String toString() {
-        return "ConnMsg{" +
-                "index=" + index +
-                ", tempPublicKey=" + "byte[" + tempPublicKey.length + "]" +
-                ", publicKey=" + "byte[" + publicKey.length + "]" +
-                '}';
     }
 
 }

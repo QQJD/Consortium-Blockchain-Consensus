@@ -26,7 +26,6 @@ public class P2PServer {
         bootstrap.group(bossGroup, workerGroup)
                 .channel(NioServerSocketChannel.class)
                 .option(ChannelOption.SO_BACKLOG, 65536)
-                .option(ChannelOption.RCVBUF_ALLOCATOR, new FixedRecvByteBufAllocator(1024 * 64))
                 .childOption(ChannelOption.SO_KEEPALIVE, true)
                 .childHandler(new ChannelInitializer<>() {
                     @Override
@@ -43,6 +42,7 @@ public class P2PServer {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+        assert cf != null;
         cf.channel().closeFuture();
 
     }

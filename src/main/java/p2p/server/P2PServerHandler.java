@@ -4,9 +4,12 @@ import com.google.gson.Gson;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import pojo.msg.MsgType;
 import pojo.msg.RawMsg;
 
 public class P2PServerHandler extends SimpleChannelInboundHandler<RawMsg> {
+
+    int cnt = 0;
 
     private P2PServerProcessor processor = P2PServerProcessor.getInstance();
 
@@ -21,7 +24,7 @@ public class P2PServerHandler extends SimpleChannelInboundHandler<RawMsg> {
     }
 
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         cause.printStackTrace();
     }
 
