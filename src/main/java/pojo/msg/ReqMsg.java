@@ -7,7 +7,7 @@ import lombok.ToString;
 /**
  * 用户向P2P网络发送的请求，也就是需要共识的消息
  */
-@NoArgsConstructor @ToString
+@NoArgsConstructor
 public class ReqMsg {
 
     /**
@@ -24,6 +24,14 @@ public class ReqMsg {
     public ReqMsg(int seq, String body) {
         this.seq = seq;
         this.body = body;
+    }
+
+    @Override
+    public String toString() {
+        return "ReqMsg{" +
+                "seq=" + seq +
+                ", body=char[" + body.length() + "]" +
+                '}';
     }
 
 }

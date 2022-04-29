@@ -335,10 +335,10 @@ public class StatusSetUtils {
         if (ConsensusStatus.auxs.containsKey(seq)
                 && ConsensusStatus.auxs.get(seq).containsKey(src)
                 && ConsensusStatus.auxs.get(seq).get(src).containsKey(round)
-                && (ConsensusStatus.auxs.get(seq).get(src).get(round).containsKey(true)
+                && ((ConsensusStatus.auxs.get(seq).get(src).get(round).containsKey(true)
                 && ConsensusStatus.auxs.get(seq).get(src).get(round).get(true).contains(index))
                 || (ConsensusStatus.auxs.get(seq).get(src).get(round).containsKey(false)
-                && ConsensusStatus.auxs.get(seq).get(src).get(round).get(false).contains(index))) {
+                && ConsensusStatus.auxs.get(seq).get(src).get(round).get(false).contains(index)))) {
             return true;
         }
         return false;
@@ -392,21 +392,32 @@ public class StatusSetUtils {
     }
 
     public static boolean isEnoughAux(int seq, byte src, byte round) {
-        if (isInBinValues(seq, src, round)) {
+        if (ConsensusStatus.auxs.containsKey(seq)
+                && ConsensusStatus.auxs.get(seq).containsKey(src)
+                && ConsensusStatus.auxs.get(seq).get(src).containsKey(round)
+                && isInBinValues(seq, src, round)) {
             Byte binValue = ConsensusStatus.binValues.get(seq).get(src).get(round);
             int received = 0;
             switch (binValue) {
                 case 0:
                     break;
                 case 1:
-                    received = ConsensusStatus.auxs.get(seq).get(src).get(round).get(false).size();
+                    if (ConsensusStatus.auxs.get(seq).get(src).get(round).containsKey(false)) {
+                        received = ConsensusStatus.auxs.get(seq).get(src).get(round).get(false).size();
+                    }
                     break;
                 case 2:
-                    received = ConsensusStatus.auxs.get(seq).get(src).get(round).get(true).size();
+                    if (ConsensusStatus.auxs.get(seq).get(src).get(round).containsKey(true)) {
+                        received = ConsensusStatus.auxs.get(seq).get(src).get(round).get(true).size();
+                    }
                     break;
                 case 3:
-                    received = ConsensusStatus.auxs.get(seq).get(src).get(round).get(false).size()
-                            + ConsensusStatus.auxs.get(seq).get(src).get(round).get(true).size();
+                    if (ConsensusStatus.auxs.get(seq).get(src).get(round).containsKey(false)) {
+                        received += ConsensusStatus.auxs.get(seq).get(src).get(round).get(false).size();
+                    }
+                    if (ConsensusStatus.auxs.get(seq).get(src).get(round).containsKey(true)) {
+                        received += ConsensusStatus.auxs.get(seq).get(src).get(round).get(true).size();
+                    }
                     break;
             }
             if (received >= NetworkInfo.getN() - NetworkInfo.getF()) {
@@ -417,13 +428,21 @@ public class StatusSetUtils {
         return false;
     }
 
-    public static void addOutputs(int seq, byte src) {
+    public static boolean isInOutputs(int seq, byte src) {
+        if (ConsensusStatus.outputs.containsKey(seq)
+                && ConsensusStatus.outputs.get(seq).containsKey(src)) {
+            return true;
+        }
+        return false;
+    }
+
+    public static void addOutputs(int seq, byte src, boolean est) {
         locks[17].lock();
         if (!ConsensusStatus.outputs.containsKey(seq)) {
-            ConsensusStatus.outputs.put(seq, new ConcurrentHashSet<>());
+            ConsensusStatus.outputs.put(seq, new ConcurrentHashMap<>());
         }
         locks[17].unlock();
-        ConsensusStatus.outputs.get(seq).add(src);
+        ConsensusStatus.outputs.get(seq).put(src, est);
     }
 
 }

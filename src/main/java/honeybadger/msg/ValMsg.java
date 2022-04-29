@@ -4,10 +4,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+import java.util.Arrays;
+
 /**
  * Honey Badger共识的VAL消息
  */
-@NoArgsConstructor @ToString
+@NoArgsConstructor
 public class ValMsg {
 
     /**
@@ -38,4 +40,13 @@ public class ValMsg {
         this.proof = proof;
     }
 
+    @Override
+    public String toString() {
+        return "ValMsg{" +
+                "seq=" + seq +
+                ", data=char[" + data.length() + "]" +
+                ", root='" + root + '\'' +
+                ", proof=" + Arrays.toString(proof) +
+                '}';
+    }
 }

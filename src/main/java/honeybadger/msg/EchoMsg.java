@@ -2,9 +2,10 @@ package honeybadger.msg;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 
-@NoArgsConstructor @ToString
+import java.util.Arrays;
+
+@NoArgsConstructor
 public class EchoMsg {
 
     /**
@@ -35,4 +36,13 @@ public class EchoMsg {
         this.proof = proof;
     }
 
+    @Override
+    public String toString() {
+        return "EchoMsg{" +
+                "seq=" + seq +
+                ", data=char[" + data.length() + "]" +
+                ", root='" + root + '\'' +
+                ", proof=" + Arrays.toString(proof) +
+                '}';
+    }
 }

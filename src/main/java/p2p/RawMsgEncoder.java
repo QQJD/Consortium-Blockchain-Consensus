@@ -19,41 +19,45 @@ public class RawMsgEncoder extends MessageToByteEncoder<RawMsg> {
     public Node node = Node.getInstance();
 
     @Override
-    synchronized protected void encode(ChannelHandlerContext ctx, RawMsg rawMsg, ByteBuf byteBuf) {
+    protected void encode(ChannelHandlerContext ctx, RawMsg rawMsg, ByteBuf byteBuf) {
 
-        // 对于CONN、CONN_REPLY消息，建立连接时双方密钥未协商完成，无法加密/签名
-        // 对于REQ消息，暂不考虑用户与P2P网络之间的通信加密
-        MsgType msgType = rawMsg.getMsgType();
-        if(msgType == MsgType.CONN || msgType == MsgType.CONN_REPLY || msgType == MsgType.REQ) {
-            byte[] json = rawMsg.getJson().getBytes();
-            int jsonLen = json.length;
-            int fullLen = 12 + jsonLen;
+        // synchronized (Node.class) {
+
+            // 对于CONN、CONN_REPLY消息，建立连接时双方密钥未协商完成，无法加密/签名
+            // 对于REQ消息，暂不考虑用户与P2P网络之间的通信加密
+            MsgType msgType = rawMsg.getMsgType();
+            if (msgType == MsgType.CONN || msgType == MsgType.CONN_REPLY || msgType == MsgType.REQ) {
+                byte[] json = rawMsg.getJson().getBytes();
+                int jsonLen = json.length;
+                int fullLen = 12 + jsonLen;
+                byteBuf.writeInt(fullLen);
+                byteBuf.writeInt(msgType.ordinal());
+                byteBuf.writeInt(jsonLen);
+                byteBuf.writeBytes(json);
+                return;
+            }
+
+            // 加密，签名
+            SecretKey secretKey = ctx.channel().attr(channelInfoKey).get().getSecretKey();
+            byte[] enc = CryptoUtils.encrypt(node.getSymmetricAlgorithm(), rawMsg.getJson().getBytes(CharsetUtil.UTF_8), secretKey);
+            byte[] sig = CryptoUtils.sign(node.getDigestAlgorithm(), node.getAsymmetricAlgorithm(), rawMsg.getJson().getBytes(CharsetUtil.UTF_8), node.getKeyPair().getPrivate());
+
+            // 在消息中附加byte[]字段的长度，以便解码
+            assert enc != null;
+            int encLen = enc.length;
+            assert sig != null;
+            int sigLen = sig.length;
+
+            // 输出，在包头附加总长度，以解决拆包问题
+            int fullLen = 16 + encLen + sigLen;
             byteBuf.writeInt(fullLen);
             byteBuf.writeInt(msgType.ordinal());
-            byteBuf.writeInt(jsonLen);
-            byteBuf.writeBytes(json);
-            return;
-        }
+            byteBuf.writeInt(encLen);
+            byteBuf.writeInt(sigLen);
+            byteBuf.writeBytes(enc);
+            byteBuf.writeBytes(sig);
 
-        // 加密，签名
-        SecretKey secretKey = ctx.channel().attr(channelInfoKey).get().getSecretKey();
-        byte[] enc = CryptoUtils.encrypt(node.getSymmetricAlgorithm(), rawMsg.getJson().getBytes(CharsetUtil.UTF_8), secretKey);
-        byte[] sig = CryptoUtils.sign(node.getDigestAlgorithm(), node.getAsymmetricAlgorithm(), rawMsg.getJson().getBytes(CharsetUtil.UTF_8), node.getKeyPair().getPrivate());
-
-        // 在消息中附加byte[]字段的长度，以便解码
-        assert enc != null;
-        int encLen = enc.length;
-        assert sig != null;
-        int sigLen = sig.length;
-
-        // 输出，在包头附加总长度，以解决拆包问题
-        int fullLen = 16 + encLen + sigLen;
-        byteBuf.writeInt(fullLen);
-        byteBuf.writeInt(msgType.ordinal());
-        byteBuf.writeInt(encLen);
-        byteBuf.writeInt(sigLen);
-        byteBuf.writeBytes(enc);
-        byteBuf.writeBytes(sig);
+        // }
 
     }
 

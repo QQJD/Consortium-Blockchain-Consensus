@@ -125,6 +125,6 @@ public class ConsensusStatus {
      * key：请求序号
      * value：该请求序号下哪些节点的提议（merkle root）已经完成BA共识
      */
-    public static ConcurrentHashMap<Integer, ConcurrentHashSet<Byte>> outputs = new ConcurrentHashMap<>();
+    public static ConcurrentHashMap<Integer, ConcurrentHashMap<Byte, Boolean>> outputs = new ConcurrentHashMap<>();
 
 }
